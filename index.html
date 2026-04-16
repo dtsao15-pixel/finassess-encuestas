@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinAssess - Diagnóstico Financiero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Banner sin conexión (oculto por defecto) -->
+  <div id="offline-banner" class="offline-banner hidden" role="alert" aria-live="assertive">
+    <span class="offline-icon">📡</span>
+    Sin conexión — tus respuestas se guardarán localmente y se sincronizarán cuando vuelva la conexión.
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo">
+      <span class="logo-text">FinAssess</span><span class="logo-dot">.</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       PANTALLA 1: INTRO
+  ═══════════════════════════════════════════ -->
+  <main>
+    <section id="screen-intro" class="screen screen-intro active">
+      <div class="intro-card">
+        <div class="intro-badge">Diagnóstico Financiero</div>
+        <h1 class="intro-title">Descubre tu perfil<br />financiero en minutos</h1>
+        <p class="intro-subtitle">
+          Responde 10 preguntas y recibe un diagnóstico personalizado
+          sobre tu situación financiera.
+        </p>
+
+        <form id="form-intro" novalidate>
+          <!-- Nombre -->
+          <div class="field-group">
+            <label for="input-name" class="field-label">
+              Nombre completo <span class="required-mark">*</span>
+            </label>
+            <input
+              type="text"
+              id="input-name"
+              name="respondentName"
+              class="field-input"
+              placeholder="Ej. María García"
+              autocomplete="name"
+              required
+            />
+            <span class="field-error" id="error-name" role="alert"></span>
+          </div>
+
+          <!-- Email -->
+          <div class="field-group">
+            <label for="input-email" class="field-label">
+              Correo electrónico <span class="required-mark">*</span>
+            </label>
+            <input
+              type="email"
+              id="input-email"
+              name="respondentEmail"
+              class="field-input"
+              placeholder="Ej. maria@correo.com"
+              autocomplete="email"
+              required
+            />
+            <span class="field-error" id="error-email" role="alert"></span>
+          </div>
+
+          <!-- Teléfono (opcional) -->
+          <div class="field-group">
+            <label for="input-phone" class="field-label">
+              Teléfono <span class="optional-mark">(opcional)</span>
+            </label>
+            <input
+              type="tel"
+              id="input-phone"
+              name="respondentPhone"
+              class="field-input"
+              placeholder="Ej. 3001234567"
+              autocomplete="tel"
+            />
+          </div>
+
+          <!-- Edad -->
+          <div class="field-group">
+            <label for="input-age" class="field-label">
+              Edad <span class="required-mark">*</span>
+            </label>
+            <input
+              type="number"
+              id="input-age"
+              name="respondentAge"
+              class="field-input"
+              placeholder="Ej. 32"
+              min="18"
+              max="99"
+              required
+            />
+            <span class="field-error" id="error-age" role="alert"></span>
+          </div>
+
+          <!-- Selección de perfil -->
+          <div class="field-group">
+            <p class="field-label">
+              ¿Cuál es tu perfil? <span class="required-mark">*</span>
+            </p>
+            <div class="profile-options">
+              <button
+                type="button"
+                id="btn-profile-retail"
+                class="profile-btn"
+                data-profile="persona_natural"
+                aria-pressed="false"
+              >
+                <span class="profile-icon">👤</span>
+                <span class="profile-name">Persona Natural</span>
+                <span class="profile-desc">Finanzas personales</span>
+              </button>
+              <button
+                type="button"
+                id="btn-profile-pyme"
+                class="profile-btn"
+                data-profile="pyme"
+                aria-pressed="false"
+              >
+                <span class="profile-icon">🏢</span>
+                <span class="profile-name">PYME</span>
+                <span class="profile-desc">Empresa pequeña o mediana</span>
+              </button>
+            </div>
+            <span class="field-error" id="error-profile" role="alert"></span>
+          </div>
+
+          <!-- Aviso de privacidad -->
+          <p class="privacy-notice">
+            🔒 Tus datos se usan únicamente para generar tu diagnóstico financiero y
+            mejorar nuestros servicios. No los compartimos con terceros.
+            Al continuar, aceptas nuestra
+            <a href="#" class="privacy-link">política de privacidad</a>.
+          </p>
+
+          <button type="submit" id="btn-start" class="btn-primary btn-full">
+            Comenzar assessment →
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         PANTALLA 2: ENCUESTA
+    ═══════════════════════════════════════════ -->
+    <section id="screen-survey" class="screen screen-survey hidden">
+
+      <!-- Barra de progreso -->
+      <div class="progress-bar-container" aria-label="Progreso de la encuesta">
+        <div class="progress-bar-track">
+          <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%"></div>
+        </div>
+        <span id="progress-label" class="progress-label">Pregunta 1 de 10</span>
+      </div>
+
+      <!-- Sección / categoría actual -->
+      <div class="survey-header">
+        <span id="survey-section-label" class="survey-section-label"></span>
+        <h2 id="survey-question-text" class="survey-question"></h2>
+      </div>
+
+      <!-- Opciones de respuesta (opción múltiple) -->
+      <div id="survey-options" class="survey-options" role="group" aria-labelledby="survey-question-text">
+        <!-- Se genera dinámicamente por survey.js -->
+      </div>
+
+      <!-- Respuesta abierta -->
+      <div id="survey-open" class="survey-open hidden">
+        <textarea
+          id="survey-open-input"
+          class="open-textarea"
+          rows="4"
+          placeholder="Escribe tu respuesta aquí..."
+          aria-labelledby="survey-question-text"
+        ></textarea>
+      </div>
+
+      <!-- Navegación -->
+      <div class="survey-nav">
+        <button type="button" id="btn-prev" class="btn-secondary" aria-label="Pregunta anterior">
+          ← Atrás
+        </button>
+        <button type="button" id="btn-next" class="btn-primary" aria-label="Siguiente pregunta">
+          Siguiente →
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         PANTALLA 3: GRACIAS / RESULTADO
+    ═══════════════════════════════════════════ -->
+    <section id="screen-thankyou" class="screen screen-thankyou hidden">
+      <div class="thankyou-card">
+        <div class="thankyou-icon" aria-hidden="true">✅</div>
+        <h2 class="thankyou-title">¡Gracias, <span id="thankyou-name"></span>!</h2>
+        <p class="thankyou-subtitle">Tu diagnóstico financiero ha sido registrado.</p>
+
+        <!-- Estado del envío a Sheets -->
+        <div id="email-status" class="email-status" role="status" aria-live="polite">
+          <!-- Se actualiza dinámicamente -->
+        </div>
+
+        <!-- Spinner de carga -->
+        <div id="submit-spinner" class="spinner-container hidden" aria-label="Enviando respuestas...">
+          <div class="spinner" role="status"></div>
+          <span class="spinner-text">Guardando tus respuestas…</span>
+        </div>
+
+        <!-- Próximos pasos -->
+        <div class="thankyou-steps">
+          <h3 class="steps-title">¿Qué sigue?</h3>
+          <ol class="steps-list">
+            <li>Recibirás un resumen en tu correo electrónico.</li>
+            <li>Un asesor de FinAssess revisará tu diagnóstico.</li>
+            <li>Te contactaremos con recomendaciones personalizadas.</li>
+          </ol>
+        </div>
+
+        <div class="thankyou-actions">
+          <button type="button" id="btn-download-csv" class="btn-secondary">
+            ⬇ Descargar mis respuestas (CSV)
+          </button>
+          <button type="button" id="btn-restart" class="btn-outline">
+            Reiniciar encuesta
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         PANTALLA 4: ADMIN
+    ═══════════════════════════════════════════ -->
+    <section id="screen-admin" class="screen screen-admin hidden">
+      <div class="admin-container">
+        <div class="admin-header">
+          <h2 class="admin-title">Panel de Administración</h2>
+          <button type="button" id="btn-admin-back" class="btn-outline btn-sm">
+            ← Volver
+          </button>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="admin-stats">
+          <div class="stat-card">
+            <span class="stat-number" id="stat-total">0</span>
+            <span class="stat-label">Total respuestas</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="stat-retail">0</span>
+            <span class="stat-label">Persona Natural</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="stat-pyme">0</span>
+            <span class="stat-label">PYME</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="stat-synced">0</span>
+            <span class="stat-label">Sincronizadas</span>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="admin-actions">
+          <button type="button" id="btn-export-all" class="btn-primary">
+            ⬇ Exportar todo (CSV)
+          </button>
+          <button type="button" id="btn-clear-data" class="btn-danger">
+            🗑 Limpiar datos locales
+          </button>
+        </div>
+
+        <!-- Tabla de respuestas -->
+        <div class="admin-table-wrapper">
+          <table class="admin-table" id="admin-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Perfil</th>
+                <th>Fecha</th>
+                <th>Puntaje</th>
+                <th>Sincronizado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body">
+              <tr>
+                <td colspan="7" class="table-empty">No hay respuestas guardadas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Botón FAB Admin flotante -->
+  <button
+    type="button"
+    id="btn-fab-admin"
+    class="fab-admin"
+    aria-label="Abrir panel de administración"
+    title="Panel Admin"
+  >
+    ⚙
+  </button>
+
+  <!-- ═══════════════════════════════════════════
+       DATOS DE PREGUNTAS (embebidos en HTML)
+  ═══════════════════════════════════════════ -->
+
+  <!--
+    Preguntas RETAIL (Persona Natural) — usadas por survey.js
+    Se definen como JSON en un script de tipo "application/json"
+    para que survey.js las lea sin necesidad de fetch.
+  -->
+  <script id="questions-retail" type="application/json">
+  [
+    {
+      "id": "q1",
+      "section": "Diversificación",
+      "text": "¿En cuántas entidades financieras tienes productos actualmente?",
+      "type": "single",
+      "options": [
+        "Solo en una",
+        "En 2 entidades",
+        "En 3 entidades",
+        "En 4 o más"
+      ]
+    },
+    {
+      "id": "q2",
+      "section": "Productos",
+      "text": "¿Qué productos tienes activos hoy?",
+      "type": "multi",
+      "options": [
+        "Cuenta de ahorros",
+        "CDT",
+        "Fondo de inversión",
+        "Pensión voluntaria",
+        "Cuenta corriente"
+      ]
+    },
+    {
+      "id": "q3",
+      "section": "Hábitos de ahorro",
+      "text": "Cuando recibes tu salario, ¿qué haces con el dinero que no gastas?",
+      "type": "single",
+      "options": [
+        "Lo dejo en la cuenta de ahorros",
+        "Lo paso a un CDT o fondo",
+        "Tengo una rutina definida de ahorro",
+        "Varía cada mes"
+      ]
+    },
+    {
+      "id": "q4",
+      "section": "Visibilidad financiera",
+      "text": "¿Sabes exactamente cuánto tienes en total entre todas tus cuentas e inversiones?",
+      "type": "single",
+      "options": [
+        "Sí, lo reviso con frecuencia",
+        "Más o menos, pero no exactamente",
+        "Rara vez lo calculo",
+        "No tengo idea"
+      ]
+    },
+    {
+      "id": "q5",
+      "section": "Oportunidad percibida",
+      "text": "¿Alguna vez has sentido que tu plata podría estar ganando más de lo que gana hoy?",
+      "type": "single",
+      "options": [
+        "Sí, frecuentemente",
+        "A veces lo pienso",
+        "Rara vez",
+        "No, estoy satisfecho"
+      ]
+    },
+    {
+      "id": "q6",
+      "section": "Comparación de opciones",
+      "text": "¿Qué tan difícil es para ti comparar tasas y rendimientos entre diferentes entidades?",
+      "type": "single",
+      "options": [
+        "Muy difícil, no sé cómo hacerlo",
+        "Difícil, me toma mucho tiempo",
+        "Regular",
+        "Fácil, lo hago seguido"
+      ]
+    },
+    {
+      "id": "q6b",
+      "section": "Comparación de opciones",
+      "text": "Cuéntanos un poco más — ¿por qué se te hace difícil (o fácil) comparar opciones?",
+      "type": "open"
+    },
+    {
+      "id": "q7",
+      "section": "Asesoría",
+      "text": "Cuando necesitas tomar una decisión financiera, ¿a quién consultas?",
+      "type": "single",
+      "options": [
+        "Al asesor del banco",
+        "A un familiar o amigo",
+        "Investigo por mi cuenta en internet",
+        "No consulto a nadie"
+      ]
+    },
+    {
+      "id": "q8",
+      "section": "Confianza en tecnología",
+      "text": "¿Confiarías en una app que conecta tus cuentas de todos los bancos para darte recomendaciones?",
+      "type": "single",
+      "options": [
+        "Sí, sin dudarlo",
+        "Sí, si tiene buena seguridad",
+        "Tendría dudas, pero lo intentaría",
+        "No, me genera desconfianza"
+      ]
+    },
+    {
+      "id": "q8b",
+      "section": "Confianza en tecnología",
+      "text": "¿Qué es lo que más te generaría confianza — o desconfianza — en una app así?",
+      "type": "open"
+    }
+  ]
+  </script>
+
+  <!--
+    Preguntas PYME — usadas por survey.js
+  -->
+  <script id="questions-pyme" type="application/json">
+  [
+    {
+      "id": "p1",
+      "section": "Diversificación",
+      "text": "¿En cuántas entidades financieras tiene productos tu empresa?",
+      "type": "single",
+      "options": [
+        "Solo en una",
+        "En 2 entidades",
+        "En 3 o más",
+        "No tenemos productos financieros formales"
+      ]
+    },
+    {
+      "id": "p2",
+      "section": "Excedentes de caja",
+      "text": "¿Cuánto dinero en excedentes de caja maneja tu empresa mensualmente en promedio?",
+      "type": "single",
+      "options": [
+        "Menos de $5M COP",
+        "Entre $5M y $20M COP",
+        "Entre $20M y $100M COP",
+        "Más de $100M COP"
+      ]
+    },
+    {
+      "id": "p3",
+      "section": "Toma de decisiones",
+      "text": "¿Quién decide dónde poner los excedentes de caja en tu empresa?",
+      "type": "single",
+      "options": [
+        "Yo mismo (dueño/gerente)",
+        "Un contador o CFO",
+        "El asesor del banco",
+        "No hay un proceso definido"
+      ]
+    },
+    {
+      "id": "p4",
+      "section": "Frecuencia de revisión",
+      "text": "¿Con qué frecuencia revisas si los excedentes están bien ubicados?",
+      "type": "single",
+      "options": [
+        "Diariamente",
+        "Semanalmente",
+        "Mensualmente",
+        "Rara vez o nunca"
+      ]
+    },
+    {
+      "id": "p5",
+      "section": "Oportunidad perdida",
+      "text": "¿Alguna vez te diste cuenta que tenías plata parada en una cuenta corriente sin rendir?",
+      "type": "single",
+      "options": [
+        "Sí, frecuentemente",
+        "Alguna vez",
+        "Rara vez",
+        "Nunca"
+      ]
+    },
+    {
+      "id": "p6",
+      "section": "Tiempo de gestión",
+      "text": "¿Cuánto tiempo dedicas al mes a gestionar los excedentes de caja?",
+      "type": "single",
+      "options": [
+        "Menos de 1 hora",
+        "1 a 3 horas",
+        "3 a 8 horas",
+        "Más de 8 horas"
+      ]
+    },
+    {
+      "id": "p6b",
+      "section": "Tiempo de gestión",
+      "text": "¿Por qué crees que le dedicas ese tiempo? ¿Qué hace que sea tan fácil o tan difícil?",
+      "type": "open"
+    },
+    {
+      "id": "p7",
+      "section": "Asesoría",
+      "text": "¿Tienes un asesor financiero que te ayude con la gestión de excedentes?",
+      "type": "single",
+      "options": [
+        "Sí, y es muy útil",
+        "Sí, pero no es muy activo",
+        "No, pero lo necesito",
+        "No, no necesito uno"
+      ]
+    },
+    {
+      "id": "p8",
+      "section": "Disposición a pagar",
+      "text": "¿Pagarías por una plataforma que optimice automáticamente los excedentes de tu empresa?",
+      "type": "single",
+      "options": [
+        "Sí, definitivamente",
+        "Sí, si el ahorro lo justifica",
+        "Tal vez",
+        "No, esperaría que fuera gratis"
+      ]
+    },
+    {
+      "id": "p8b",
+      "section": "Disposición a pagar",
+      "text": "¿Qué necesitarías ver o sentir para tomar esa decisión de pagar — o qué te frenaría?",
+      "type": "open"
+    }
+  ]
+  </script>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="js/types.js"></script>
+  <script src="js/submission.js"></script>
+  <script src="js/survey.js"></script>
+
+</body>
+</html>
